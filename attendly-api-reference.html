@@ -1,0 +1,864 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Attendly — API Reference</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#140e18; --surface:#1c1421; --card:#271c2d; --card-alt:#372a3e;
+    --border:#4a3a51; --accent:#8a5f7d; --accent-light:#b483a3; --accent-lighter:#d9b8cd;
+    --text:#f5ecf1; --muted:#9c8aa0;
+    --success:#7fae8f; --success-bg:#1c2b23;
+    --warning:#d0965a; --warning-bg:#2e2214;
+    --danger:#c96b7a; --danger-bg:#2c1a20;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'Inter',system-ui,sans-serif;
+    line-height:1.55;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; font-weight:600; margin:0;}
+  code, .mono{font-family:'JetBrains Mono',monospace;}
+  a{color:var(--accent-lighter); text-decoration:none;}
+  a:hover{text-decoration:underline;}
+
+  /* Layout */
+  .layout{display:flex; min-height:100vh;}
+  .sidebar{
+    width:260px; flex-shrink:0; background:var(--surface);
+    border-right:1px solid var(--border); padding:24px 16px;
+    position:sticky; top:0; height:100vh; overflow-y:auto;
+  }
+  .brand{display:flex; align-items:center; gap:10px; padding:0 8px 20px; border-bottom:1px solid var(--border); margin-bottom:16px;}
+  .brand-title{font-size:18px; letter-spacing:-0.02em;}
+  .brand-sub{font-size:12px; color:var(--muted); margin-top:2px;}
+  .search{
+    width:100%; background:var(--card); border:1px solid var(--border); color:var(--text);
+    border-radius:8px; padding:9px 12px; font-size:13px; margin-bottom:18px; outline:none;
+  }
+  .search:focus{border-color:var(--accent-light);}
+  .nav-group{margin-bottom:6px;}
+  .nav-group-title{
+    font-size:11px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted);
+    padding:8px 8px 6px;
+  }
+  .nav-link{
+    display:flex; align-items:center; gap:8px; padding:7px 8px; border-radius:6px;
+    font-size:13px; color:var(--muted); cursor:pointer;
+  }
+  .nav-link:hover{background:var(--card); color:var(--text); text-decoration:none;}
+  .nav-link .m{font-size:10px; font-weight:600; width:38px; text-align:center; border-radius:4px; padding:1px 0; font-family:'JetBrains Mono',monospace;}
+
+  main{flex:1; min-width:0; padding:48px 56px 120px; max-width:920px;}
+  .hero{margin-bottom:40px;}
+  .eyebrow{font-size:12px; text-transform:uppercase; letter-spacing:0.12em; color:var(--accent-lighter); margin-bottom:8px;}
+  .hero h1{font-size:34px; margin-bottom:10px;}
+  .hero p{color:var(--muted); max-width:640px; font-size:15px;}
+
+  .info-box{
+    background:var(--card); border:1px solid var(--border); border-radius:12px;
+    padding:18px 20px; margin:14px 0 8px; font-size:14px;
+  }
+  .info-box + .info-box{margin-top:12px;}
+  .info-box h3{font-size:14px; margin-bottom:8px; color:var(--text);}
+  .info-box .mono{color:var(--accent-lighter); background:var(--card-alt); padding:1px 6px; border-radius:4px; font-size:12.5px;}
+  .role-legend{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+
+  .section{margin-top:56px; padding-top:8px;}
+  .section-head{display:flex; align-items:baseline; gap:12px; margin-bottom:6px; border-bottom:1px solid var(--border); padding-bottom:14px;}
+  .section-head h2{font-size:22px;}
+  .section-head .count{font-size:12px; color:var(--muted);}
+  .section-desc{color:var(--muted); font-size:13.5px; margin:10px 0 24px;}
+
+  .endpoint{
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:22px 24px; margin-bottom:18px; scroll-margin-top:24px;
+  }
+  .endpoint-top{display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px;}
+  .method{
+    font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700;
+    padding:3px 8px; border-radius:5px; letter-spacing:0.03em;
+  }
+  .m-get{background:var(--success-bg); color:var(--success);}
+  .m-post{background:rgba(138,95,125,0.28); color:var(--accent-lighter);}
+  .m-put{background:var(--warning-bg); color:var(--warning);}
+  .m-patch{background:rgba(217,184,205,0.16); color:var(--accent-lighter);}
+  .path{font-family:'JetBrains Mono',monospace; font-size:14px; color:var(--text);}
+  .badge{
+    font-size:11px; font-weight:600; padding:3px 9px; border-radius:99px;
+    background:var(--card-alt); color:var(--muted); margin-left:auto;
+  }
+  .badge.role-admin{background:var(--danger-bg); color:var(--danger);}
+  .badge.role-teacher{background:var(--warning-bg); color:var(--warning);}
+  .badge.role-student{background:var(--success-bg); color:var(--success);}
+  .badge.role-public{background:var(--card-alt); color:var(--muted);}
+
+  .desc{font-size:14px; color:var(--text); margin-bottom:14px;}
+  .desc .use-case{color:var(--muted); font-size:13px; display:block; margin-top:4px;}
+
+  table{width:100%; border-collapse:collapse; font-size:13px; margin:10px 0 6px;}
+  th{text-align:left; color:var(--muted); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.04em; padding:6px 10px; border-bottom:1px solid var(--border);}
+  td{padding:8px 10px; border-bottom:1px solid rgba(74,58,81,0.5); vertical-align:top;}
+  td .mono{color:var(--accent-lighter);}
+  td.req{color:var(--danger); font-size:12px; font-weight:600;}
+  td.opt{color:var(--muted); font-size:12px;}
+  .subhead{font-size:11.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); margin:16px 0 4px;}
+
+  pre{
+    background:var(--surface); border:1px solid var(--border); border-radius:8px;
+    padding:14px 16px; font-size:12.5px; overflow-x:auto; margin:6px 0;
+    font-family:'JetBrains Mono',monospace; color:var(--accent-lighter);
+  }
+  pre .k{color:#d9b8cd;} pre .s{color:#9fd6b8;} pre .n{color:#e0a875;}
+  .status-tag{display:inline-block; font-family:'JetBrains Mono',monospace; font-size:11px; font-weight:700; padding:1px 7px; border-radius:4px; margin-right:8px;}
+  .status-2xx{background:var(--success-bg); color:var(--success);}
+  .status-4xx{background:var(--danger-bg); color:var(--danger);}
+
+  .error-row{display:flex; gap:8px; align-items:flex-start; font-size:13px; padding:6px 0; border-bottom:1px dashed rgba(74,58,81,0.4);}
+  .error-row:last-child{border-bottom:none;}
+
+  .hidden{display:none !important;}
+  @media (max-width:860px){
+    .sidebar{display:none;}
+    main{padding:32px 20px 100px;}
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div>
+        <div class="brand-title">Attendly</div>
+        <div class="brand-sub">API Reference</div>
+      </div>
+    </div>
+    <input class="search" id="searchInput" placeholder="Filter endpoints…" />
+    <nav id="sideNav">
+      <div class="nav-group">
+        <div class="nav-group-title">Auth</div>
+        <div class="nav-link" data-target="auth-login"><span class="m mono" style="color:#b483a3">POST</span>/auth/login</div>
+        <div class="nav-link" data-target="auth-me"><span class="m mono" style="color:#7fae8f">GET</span>/auth/me</div>
+        <div class="nav-link" data-target="auth-change-password"><span class="m mono" style="color:#d0965a">PUT</span>/auth/change-password</div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Admin</div>
+        <div class="nav-link" data-target="admin-create-user"><span class="m mono" style="color:#b483a3">POST</span>/admin/users</div>
+        <div class="nav-link" data-target="admin-list-users"><span class="m mono" style="color:#7fae8f">GET</span>/admin/users</div>
+        <div class="nav-link" data-target="admin-update-user"><span class="m mono" style="color:#d0965a">PUT</span>/admin/users/:id</div>
+        <div class="nav-link" data-target="admin-deactivate-user"><span class="m mono" style="color:#d9b8cd">PATCH</span>/deactivate</div>
+        <div class="nav-link" data-target="admin-reactivate-user"><span class="m mono" style="color:#d9b8cd">PATCH</span>/reactivate</div>
+        <div class="nav-link" data-target="admin-create-class"><span class="m mono" style="color:#b483a3">POST</span>/admin/classes</div>
+        <div class="nav-link" data-target="admin-list-classes"><span class="m mono" style="color:#7fae8f">GET</span>/admin/classes</div>
+        <div class="nav-link" data-target="admin-update-class"><span class="m mono" style="color:#d0965a">PUT</span>/admin/classes/:id</div>
+        <div class="nav-link" data-target="admin-assign-teacher"><span class="m mono" style="color:#d9b8cd">PATCH</span>/assign-teacher</div>
+        <div class="nav-link" data-target="admin-add-student"><span class="m mono" style="color:#d9b8cd">PATCH</span>/students/add</div>
+        <div class="nav-link" data-target="admin-remove-student"><span class="m mono" style="color:#d9b8cd">PATCH</span>/students/remove</div>
+        <div class="nav-link" data-target="admin-deactivate-class"><span class="m mono" style="color:#d9b8cd">PATCH</span>/deactivate</div>
+        <div class="nav-link" data-target="admin-audit-logs"><span class="m mono" style="color:#7fae8f">GET</span>/admin/audit-logs</div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Teacher</div>
+        <div class="nav-link" data-target="teacher-my-classes"><span class="m mono" style="color:#7fae8f">GET</span>/teacher/classes</div>
+        <div class="nav-link" data-target="teacher-add-student"><span class="m mono" style="color:#d9b8cd">PATCH</span>/students/add</div>
+        <div class="nav-link" data-target="teacher-remove-student"><span class="m mono" style="color:#d9b8cd">PATCH</span>/students/remove</div>
+        <div class="nav-link" data-target="teacher-class-attendance"><span class="m mono" style="color:#7fae8f">GET</span>/:id/attendance</div>
+        <div class="nav-link" data-target="teacher-student-attendance"><span class="m mono" style="color:#7fae8f">GET</span>/student/:id</div>
+        <div class="nav-link" data-target="teacher-defaulters"><span class="m mono" style="color:#7fae8f">GET</span>/defaulters</div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Student</div>
+        <div class="nav-link" data-target="student-my-classes"><span class="m mono" style="color:#7fae8f">GET</span>/student/classes</div>
+        <div class="nav-link" data-target="student-timetable"><span class="m mono" style="color:#7fae8f">GET</span>/student/timetable</div>
+        <div class="nav-link" data-target="student-my-attendance"><span class="m mono" style="color:#7fae8f">GET</span>/student/attendance</div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Attendance (QR)</div>
+        <div class="nav-link" data-target="att-create-session"><span class="m mono" style="color:#b483a3">POST</span>/sessions</div>
+        <div class="nav-link" data-target="att-get-qr"><span class="m mono" style="color:#7fae8f">GET</span>/sessions/:id/qr</div>
+        <div class="nav-link" data-target="att-close-session"><span class="m mono" style="color:#d9b8cd">PATCH</span>/close</div>
+        <div class="nav-link" data-target="att-session-status"><span class="m mono" style="color:#7fae8f">GET</span>/status</div>
+        <div class="nav-link" data-target="att-scan"><span class="m mono" style="color:#b483a3">POST</span>/scan</div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Leave requests</div>
+        <div class="nav-link" data-target="leave-submit"><span class="m mono" style="color:#b483a3">POST</span>/leave</div>
+        <div class="nav-link" data-target="leave-mine"><span class="m mono" style="color:#7fae8f">GET</span>/leave/mine</div>
+        <div class="nav-link" data-target="leave-class"><span class="m mono" style="color:#7fae8f">GET</span>/leave/class/:id</div>
+        <div class="nav-link" data-target="leave-review"><span class="m mono" style="color:#d9b8cd">PATCH</span>/review</div>
+      </div>
+      <div class="nav-group">
+        <div class="nav-group-title">Reports</div>
+        <div class="nav-link" data-target="report-csv"><span class="m mono" style="color:#7fae8f">GET</span>/csv</div>
+        <div class="nav-link" data-target="report-pdf"><span class="m mono" style="color:#7fae8f">GET</span>/pdf</div>
+        <div class="nav-link" data-target="report-summary"><span class="m mono" style="color:#7fae8f">GET</span>/summary</div>
+      </div>
+    </nav>
+  </aside>
+
+  <main>
+    <div class="hero">
+      <p class="eyebrow">Reference</p>
+      <h1>Attendly API</h1>
+      <p>Every endpoint the frontend calls, grouped by area. Each entry lists the exact path, who's allowed to call it, what to send, and what comes back — so you can build against it without reading the controller source.</p>
+    </div>
+
+    <div class="info-box">
+      <h3>Base URL &amp; auth</h3>
+      <p>All routes are prefixed with <span class="mono">/api</span>, e.g. <span class="mono">http://localhost:5000/api/auth/login</span>.</p>
+      <p style="margin-top:8px;">Every route except <span class="mono">POST /auth/login</span> and <span class="mono">GET /health</span> requires a JWT, sent as:</p>
+      <pre>Authorization: Bearer &lt;token&gt;</pre>
+      <p style="margin-top:8px;">Get a token from <span class="mono">POST /auth/login</span>. Tokens expire after <span class="mono">JWT_EXPIRES_IN</span> (default 7 days).</p>
+      <div class="role-legend">
+        <span class="badge role-public">Public</span>
+        <span class="badge role-admin">Admin only</span>
+        <span class="badge role-teacher">Teacher (+ admin)</span>
+        <span class="badge role-student">Student only</span>
+      </div>
+    </div>
+
+    <div class="info-box">
+      <h3>Standard error shape</h3>
+      <p>Errors always return JSON with at least a <span class="mono">message</span> field:</p>
+      <pre>{ "message": "Human-readable explanation of what went wrong" }</pre>
+      <p style="margin-top:6px;">Common status codes used throughout: <span class="mono">400</span> bad input, <span class="mono">401</span> missing/invalid token, <span class="mono">403</span> not allowed (wrong role, wrong class, outside geofence), <span class="mono">404</span> not found, <span class="mono">409</span> conflict (duplicate), <span class="mono">410</span> gone/expired (QR token, session).</p>
+    </div>
+
+    <!-- ============================= AUTH ============================= -->
+    <section class="section" id="auth">
+      <div class="section-head"><h2>Auth</h2><span class="count">3 endpoints</span></div>
+      <p class="section-desc">Login and session management. There is no public registration endpoint — every account is created by an admin.</p>
+
+      <article class="endpoint" id="auth-login">
+        <div class="endpoint-top">
+          <span class="method m-post">POST</span>
+          <span class="path">/auth/login</span>
+          <span class="badge role-public">Public</span>
+        </div>
+        <p class="desc">Log in with email + password and receive a JWT.<span class="use-case">Use case: the login screen for all three roles.</span></p>
+        <div class="subhead">Request body</div>
+        <table>
+          <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+          <tr><td class="mono">email</td><td>string</td><td class="req">Required</td><td>Case-insensitive</td></tr>
+          <tr><td class="mono">password</td><td>string</td><td class="req">Required</td><td></td></tr>
+        </table>
+        <div class="subhead">Example request</div>
+        <pre>{
+  "email": "priya@school.edu",
+  "password": "MySecret123"
+}</pre>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "user": {
+    "_id": "665f...",
+    "name": "Priya Sharma",
+    "email": "priya@school.edu",
+    "role": "student",
+    "studentId": "STU-014",
+    "isActive": true
+  }
+}</pre>
+        <div class="subhead">Possible errors</div>
+        <div class="error-row"><span class="status-tag status-4xx">401</span> Invalid credentials</div>
+        <div class="error-row"><span class="status-tag status-4xx">403</span> Account has been deactivated. Contact admin.</div>
+      </article>
+
+      <article class="endpoint" id="auth-me">
+        <div class="endpoint-top">
+          <span class="method m-get">GET</span>
+          <span class="path">/auth/me</span>
+          <span class="badge">Any logged-in user</span>
+        </div>
+        <p class="desc">Returns the currently authenticated user's own profile.<span class="use-case">Use case: restoring a session on app load / refresh so the frontend knows who's logged in and what role to render.</span></p>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{ "user": { "_id": "665f...", "name": "Priya Sharma", "role": "student", ... } }</pre>
+      </article>
+
+      <article class="endpoint" id="auth-change-password">
+        <div class="endpoint-top">
+          <span class="method m-put">PUT</span>
+          <span class="path">/auth/change-password</span>
+          <span class="badge">Any logged-in user</span>
+        </div>
+        <p class="desc">Change your own password.<span class="use-case">Use case: account settings screen.</span></p>
+        <div class="subhead">Request body</div>
+        <table>
+          <tr><th>Field</th><th>Type</th><th>Required</th></tr>
+          <tr><td class="mono">currentPassword</td><td>string</td><td class="req">Required</td></tr>
+          <tr><td class="mono">newPassword</td><td>string (min 6)</td><td class="req">Required</td></tr>
+        </table>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{ "message": "Password updated successfully" }</pre>
+        <div class="subhead">Possible errors</div>
+        <div class="error-row"><span class="status-tag status-4xx">401</span> Current password is incorrect</div>
+      </article>
+    </section>
+
+    <!-- ============================= ADMIN ============================= -->
+    <section class="section" id="admin">
+      <div class="section-head"><h2>Admin</h2><span class="count">13 endpoints</span></div>
+      <p class="section-desc">Create and manage teachers, students, and classes. Every mutating action here is written to the audit log automatically.</p>
+
+      <article class="endpoint" id="admin-create-user">
+        <div class="endpoint-top"><span class="method m-post">POST</span><span class="path">/admin/users</span><span class="badge role-admin">Admin only</span></div>
+        <p class="desc">Create a teacher or student account.<span class="use-case">Use case: "Add student" / "Add teacher" form in the admin panel — this is the only way accounts get created.</span></p>
+        <div class="subhead">Request body</div>
+        <table>
+          <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+          <tr><td class="mono">name</td><td>string</td><td class="req">Required</td><td></td></tr>
+          <tr><td class="mono">email</td><td>string</td><td class="req">Required</td><td>Must be unique</td></tr>
+          <tr><td class="mono">password</td><td>string</td><td class="req">Required</td><td>Temporary password, min 6 chars</td></tr>
+          <tr><td class="mono">role</td><td>"admin" | "teacher" | "student"</td><td class="req">Required</td><td></td></tr>
+          <tr><td class="mono">employeeId</td><td>string</td><td class="opt">Optional</td><td>Used when role is teacher</td></tr>
+          <tr><td class="mono">studentId</td><td>string</td><td class="opt">Optional</td><td>Used when role is student</td></tr>
+          <tr><td class="mono">phone</td><td>string</td><td class="opt">Optional</td><td></td></tr>
+        </table>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">201</span></p>
+        <pre>{ "user": { "_id": "665f...", "name": "Priya Sharma", "role": "student", "studentId": "STU-014", "isActive": true } }</pre>
+        <div class="subhead">Possible errors</div>
+        <div class="error-row"><span class="status-tag status-4xx">400</span> Invalid role</div>
+        <div class="error-row"><span class="status-tag status-4xx">409</span> Duplicate value for field: email</div>
+      </article>
+
+      <article class="endpoint" id="admin-list-users">
+        <div class="endpoint-top"><span class="method m-get">GET</span><span class="path">/admin/users</span><span class="badge role-admin">Admin only</span></div>
+        <p class="desc">List all users, optionally filtered.<span class="use-case">Use case: the Teachers &amp; Students table, and populating "assign teacher" / "add student" dropdowns elsewhere.</span></p>
+        <div class="subhead">Query params</div>
+        <table>
+          <tr><th>Param</th><th>Type</th><th>Notes</th></tr>
+          <tr><td class="mono">role</td><td class="opt">optional</td><td>"admin" | "teacher" | "student"</td></tr>
+          <tr><td class="mono">isActive</td><td class="opt">optional</td><td>"true" | "false"</td></tr>
+        </table>
+        <div class="subhead">Example</div>
+        <pre>GET /admin/users?role=student&amp;isActive=true</pre>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{ "users": [ { "_id": "665f...", "name": "Priya Sharma", "role": "student", "isActive": true } ] }</pre>
+      </article>
+
+      <article class="endpoint" id="admin-update-user">
+        <div class="endpoint-top"><span class="method m-put">PUT</span><span class="path">/admin/users/:id</span><span class="badge role-admin">Admin only</span></div>
+        <p class="desc">Update a user's editable details.<span class="use-case">Use case: correcting a name, phone number, or ID after account creation.</span></p>
+        <div class="subhead">Path params</div>
+        <table><tr><th>Param</th><th>Notes</th></tr><tr><td class="mono">id</td><td>User's MongoDB _id</td></tr></table>
+        <div class="subhead">Request body <span style="color:var(--muted); text-transform:none; font-weight:400;">(all optional — send only what changes)</span></div>
+        <table>
+          <tr><th>Field</th><th>Type</th></tr>
+          <tr><td class="mono">name</td><td>string</td></tr>
+          <tr><td class="mono">phone</td><td>string</td></tr>
+          <tr><td class="mono">employeeId</td><td>string</td></tr>
+          <tr><td class="mono">studentId</td><td>string</td></tr>
+          <tr><td class="mono">lowAttendanceAlerts</td><td>boolean</td></tr>
+        </table>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{ "user": { "_id": "665f...", "name": "Priya S. Sharma", ... } }</pre>
+      </article>
+
+      <article class="endpoint" id="admin-deactivate-user">
+        <div class="endpoint-top"><span class="method m-patch">PATCH</span><span class="path">/admin/users/:id/deactivate</span><span class="badge role-admin">Admin only</span></div>
+        <p class="desc">Soft-delete a user (sets <span class="mono">isActive: false</span>). They can no longer log in, but their historical attendance records are preserved.<span class="use-case">Use case: a student leaves the program or a teacher leaves staff — never hard-deleted.</span></p>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{ "message": "User deactivated", "user": { "_id": "665f...", "isActive": false } }</pre>
+      </article>
+
+      <article class="endpoint" id="admin-reactivate-user">
+        <div class="endpoint-top"><span class="method m-patch">PATCH</span><span class="path">/admin/users/:id/reactivate</span><span class="badge role-admin">Admin only</span></div>
+        <p class="desc">Reverses a deactivation.<span class="use-case">Use case: someone returns, or a deactivation was a mistake.</span></p>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{ "message": "User reactivated", "user": { "_id": "665f...", "isActive": true } }</pre>
+      </article>
+
+      <article class="endpoint" id="admin-create-class">
+        <div class="endpoint-top"><span class="method m-post">POST</span><span class="path">/admin/classes</span><span class="badge role-admin">Admin only</span></div>
+        <p class="desc">Create a new class, including the fixed classroom location the 50m geofence measures against.<span class="use-case">Use case: "New class" form.</span></p>
+        <div class="subhead">Request body</div>
+        <table>
+          <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+          <tr><td class="mono">name</td><td>string</td><td class="req">Required</td><td></td></tr>
+          <tr><td class="mono">code</td><td>string</td><td class="req">Required</td><td>Must be unique, stored uppercase</td></tr>
+          <tr><td class="mono">teacher</td><td>ObjectId</td><td class="opt">Optional</td><td>Can assign later</td></tr>
+          <tr><td class="mono">students</td><td>ObjectId[]</td><td class="opt">Optional</td><td>Can add later</td></tr>
+          <tr><td class="mono">schedule</td><td>array</td><td class="opt">Optional</td><td>Each item: <span class="mono">{ day, startTime, endTime }</span>. day is one of Mon–Sun, times are "HH:mm"</td></tr>
+          <tr><td class="mono">location</td><td>{ lat, lng }</td><td class="req">Required</td><td>Used for geofencing every session in this class</td></tr>
+        </table>
+        <div class="subhead">Example request</div>
+        <pre>{
+  "name": "React JS Batch 12",
+  "code": "RJS-12",
+  "schedule": [{ "day": "Mon", "startTime": "09:00", "endTime": "10:00" }],
+  "location": { "lat": 30.9010, "lng": 75.8573 }
+}</pre>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">201</span></p>
+        <pre>{ "class": { "_id": "665f...", "name": "React JS Batch 12", "code": "RJS-12", "students": [], "isActive": true } }</pre>
+        <div class="subhead">Possible errors</div>
+        <div class="error-row"><span class="status-tag status-4xx">400</span> Class location (lat, lng) is required for geofencing</div>
+      </article>
+
+      <article class="endpoint" id="admin-list-classes">
+        <div class="endpoint-top"><span class="method m-get">GET</span><span class="path">/admin/classes</span><span class="badge role-admin">Admin only</span></div>
+        <p class="desc">List all classes with teacher and student details populated.<span class="use-case">Use case: the Classes management grid.</span></p>
+        <div class="subhead">Query params</div>
+        <table><tr><th>Param</th><th>Notes</th></tr><tr><td class="mono">isActive</td><td class="opt">"true" | "false"</td></tr></table>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{ "classes": [ { "_id": "665f...", "name": "React JS Batch 12", "teacher": { "name": "Anil Mehta" }, "students": [ { "name": "Priya Sharma" } ] } ] }</pre>
+      </article>
+
+      <article class="endpoint" id="admin-update-class">
+        <div class="endpoint-top"><span class="method m-put">PUT</span><span class="path">/admin/classes/:id</span><span class="badge role-admin">Admin only</span></div>
+        <p class="desc">Update a class's name, schedule, or geofence location.<span class="use-case">Use case: the classroom moved, or the timetable changed.</span></p>
+        <div class="subhead">Request body <span style="color:var(--muted); font-weight:400; text-transform:none;">(all optional)</span></div>
+        <table>
+          <tr><th>Field</th><th>Type</th></tr>
+          <tr><td class="mono">name</td><td>string</td></tr>
+          <tr><td class="mono">schedule</td><td>array of { day, startTime, endTime }</td></tr>
+          <tr><td class="mono">location</td><td>{ lat, lng }</td></tr>
+        </table>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{ "class": { "_id": "665f...", "name": "React JS Batch 12", ... } }</pre>
+      </article>
+
+      <article class="endpoint" id="admin-assign-teacher">
+        <div class="endpoint-top"><span class="method m-patch">PATCH</span><span class="path">/admin/classes/:id/assign-teacher</span><span class="badge role-admin">Admin only</span></div>
+        <p class="desc">Assign or reassign the teacher for a class.<span class="use-case">Use case: "Manage class" panel — teacher dropdown + Assign button.</span></p>
+        <div class="subhead">Request body</div>
+        <table><tr><th>Field</th><th>Type</th><th>Required</th></tr><tr><td class="mono">teacherId</td><td>ObjectId</td><td class="req">Required</td></tr></table>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{ "class": { "_id": "665f...", "teacher": "665a..." } }</pre>
+        <div class="subhead">Possible errors</div>
+        <div class="error-row"><span class="status-tag status-4xx">404</span> Teacher not found</div>
+      </article>
+
+      <article class="endpoint" id="admin-add-student">
+        <div class="endpoint-top"><span class="method m-patch">PATCH</span><span class="path">/admin/classes/:id/students/add</span><span class="badge role-admin">Admin only</span></div>
+        <p class="desc">Enroll a student in a class.<span class="use-case">Use case: "Manage class" panel — student dropdown + Add button.</span></p>
+        <div class="subhead">Request body</div>
+        <table><tr><th>Field</th><th>Type</th><th>Required</th></tr><tr><td class="mono">studentId</td><td>ObjectId</td><td class="req">Required</td></tr></table>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{ "class": { "_id": "665f...", "students": ["665b...", "665c..."] } }</pre>
+        <div class="subhead">Possible errors</div>
+        <div class="error-row"><span class="status-tag status-4xx">409</span> Student already in class</div>
+      </article>
+
+      <article class="endpoint" id="admin-remove-student">
+        <div class="endpoint-top"><span class="method m-patch">PATCH</span><span class="path">/admin/classes/:id/students/remove</span><span class="badge role-admin">Admin only</span></div>
+        <p class="desc">Remove a student from a class. Their past attendance records are untouched.<span class="use-case">Use case: student switches batches.</span></p>
+        <div class="subhead">Request body</div>
+        <table><tr><th>Field</th><th>Type</th><th>Required</th></tr><tr><td class="mono">studentId</td><td>ObjectId</td><td class="req">Required</td></tr></table>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{ "class": { "_id": "665f...", "students": ["665b..."] } }</pre>
+      </article>
+
+      <article class="endpoint" id="admin-deactivate-class">
+        <div class="endpoint-top"><span class="method m-patch">PATCH</span><span class="path">/admin/classes/:id/deactivate</span><span class="badge role-admin">Admin only</span></div>
+        <p class="desc">Soft-delete a class.<span class="use-case">Use case: a batch has finished/ended.</span></p>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{ "message": "Class deactivated", "class": { "_id": "665f...", "isActive": false } }</pre>
+      </article>
+
+      <article class="endpoint" id="admin-audit-logs">
+        <div class="endpoint-top"><span class="method m-get">GET</span><span class="path">/admin/audit-logs</span><span class="badge role-admin">Admin only</span></div>
+        <p class="desc">Returns the most recent 500 admin actions (who did what, when).<span class="use-case">Use case: the Audit Log page — accountability trail for every create/update/deactivate action.</span></p>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{
+  "logs": [
+    {
+      "_id": "665f...",
+      "action": "DEACTIVATE_USER",
+      "performedBy": { "name": "Admin User", "role": "admin" },
+      "targetType": "User",
+      "createdAt": "2026-07-20T10:15:00.000Z"
+    }
+  ]
+}</pre>
+      </article>
+    </section>
+
+    <!-- ============================= TEACHER ============================= -->
+    <section class="section" id="teacher">
+      <div class="section-head"><h2>Teacher</h2><span class="count">6 endpoints</span></div>
+      <p class="section-desc">Everything a teacher can do with their own assigned classes. QR session management lives under <a href="#attendance">Attendance</a> since students use it too.</p>
+
+      <article class="endpoint" id="teacher-my-classes">
+        <div class="endpoint-top"><span class="method m-get">GET</span><span class="path">/teacher/classes</span><span class="badge role-teacher">Teacher / Admin</span></div>
+        <p class="desc">Lists the classes assigned to the logged-in teacher, with enrolled students populated.<span class="use-case">Use case: "My Classes" home screen for a teacher.</span></p>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{ "classes": [ { "_id": "665f...", "name": "React JS Batch 12", "students": [ { "name": "Priya Sharma", "studentId": "STU-014" } ] } ] }</pre>
+      </article>
+
+      <article class="endpoint" id="teacher-add-student">
+        <div class="endpoint-top"><span class="method m-patch">PATCH</span><span class="path">/teacher/classes/:id/students/add</span><span class="badge role-teacher">Teacher / Admin</span></div>
+        <p class="desc">Add a student to one of the teacher's own classes. Fails if the class isn't assigned to the requester.<span class="use-case">Use case: teacher adjusts their own roster mid-term.</span></p>
+        <div class="subhead">Request body</div>
+        <table><tr><th>Field</th><th>Type</th><th>Required</th></tr><tr><td class="mono">studentId</td><td>ObjectId</td><td class="req">Required</td></tr></table>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{ "class": { "_id": "665f...", "students": ["665b...", "665c..."] } }</pre>
+        <div class="subhead">Possible errors</div>
+        <div class="error-row"><span class="status-tag status-4xx">404</span> Class not found or not assigned to you</div>
+      </article>
+
+      <article class="endpoint" id="teacher-remove-student">
+        <div class="endpoint-top"><span class="method m-patch">PATCH</span><span class="path">/teacher/classes/:id/students/remove</span><span class="badge role-teacher">Teacher / Admin</span></div>
+        <p class="desc">Remove a student from one of the teacher's own classes.<span class="use-case">Use case: same as above, in reverse.</span></p>
+        <div class="subhead">Request body</div>
+        <table><tr><th>Field</th><th>Type</th><th>Required</th></tr><tr><td class="mono">studentId</td><td>ObjectId</td><td class="req">Required</td></tr></table>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{ "class": { "_id": "665f...", "students": ["665b..."] } }</pre>
+      </article>
+
+      <article class="endpoint" id="teacher-class-attendance">
+        <div class="endpoint-top"><span class="method m-get">GET</span><span class="path">/teacher/classes/:id/attendance</span><span class="badge role-teacher">Teacher / Admin</span></div>
+        <p class="desc">All attendance records for a class, optionally within a date range.<span class="use-case">Use case: the "Class attendance" table on the teacher's Attendance page.</span></p>
+        <div class="subhead">Query params</div>
+        <table>
+          <tr><th>Param</th><th>Type</th><th>Notes</th></tr>
+          <tr><td class="mono">from</td><td class="opt">optional</td><td>ISO date — sessions on/after this date</td></tr>
+          <tr><td class="mono">to</td><td class="opt">optional</td><td>ISO date — sessions on/before this date</td></tr>
+        </table>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{
+  "totalSessions": 24,
+  "records": [
+    {
+      "_id": "665f...",
+      "student": { "name": "Priya Sharma", "studentId": "STU-014" },
+      "session": { "sessionDate": "2026-07-20T09:00:00.000Z" },
+      "status": "present",
+      "markedAt": "2026-07-20T09:02:14.000Z"
+    }
+  ]
+}</pre>
+      </article>
+
+      <article class="endpoint" id="teacher-student-attendance">
+        <div class="endpoint-top"><span class="method m-get">GET</span><span class="path">/teacher/classes/:id/students/:studentId/attendance</span><span class="badge role-teacher">Teacher / Admin</span></div>
+        <p class="desc">Attendance history + percentage for one specific student in a class.<span class="use-case">Use case: a teacher clicks into an individual student's record, e.g. from the defaulters list.</span></p>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{
+  "totalSessions": 24,
+  "attendedSessions": 18,
+  "percentage": 75,
+  "records": [ { "_id": "665f...", "status": "present", "markedAt": "2026-07-20T09:02:14.000Z" } ]
+}</pre>
+      </article>
+
+      <article class="endpoint" id="teacher-defaulters">
+        <div class="endpoint-top"><span class="method m-get">GET</span><span class="path">/teacher/classes/:id/defaulters</span><span class="badge role-teacher">Teacher / Admin</span></div>
+        <p class="desc">Lists students in the class currently below the low-attendance threshold (default 75%, set via <span class="mono">LOW_ATTENDANCE_THRESHOLD_PERCENT</span>).<span class="use-case">Use case: the Defaulters page — the "who needs a nudge" view.</span></p>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{
+  "threshold": 75,
+  "defaulters": [
+    {
+      "student": { "name": "Rahul Verma", "studentId": "STU-021" },
+      "attended": 14,
+      "totalSessions": 24,
+      "percentage": 58
+    }
+  ]
+}</pre>
+      </article>
+    </section>
+
+    <!-- ============================= STUDENT ============================= -->
+    <section class="section" id="student">
+      <div class="section-head"><h2>Student</h2><span class="count">3 endpoints</span></div>
+      <p class="section-desc">What a student sees about their own classes and attendance. Scanning itself is under <a href="#attendance">Attendance</a>.</p>
+
+      <article class="endpoint" id="student-my-classes">
+        <div class="endpoint-top"><span class="method m-get">GET</span><span class="path">/student/classes</span><span class="badge role-student">Student only</span></div>
+        <p class="desc">Classes the logged-in student is enrolled in.<span class="use-case">Use case: populating the class dropdown on the regularization request form.</span></p>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{ "classes": [ { "_id": "665f...", "name": "React JS Batch 12", "teacher": { "name": "Anil Mehta" } } ] }</pre>
+      </article>
+
+      <article class="endpoint" id="student-timetable">
+        <div class="endpoint-top"><span class="method m-get">GET</span><span class="path">/student/timetable</span><span class="badge role-student">Student only</span></div>
+        <p class="desc">Today's classes for the student, each flagged with whether a live QR session is currently open.<span class="use-case">Use case: the student's home screen — shows a "Live now" badge and a "Scan attendance" button the moment their teacher opens a session.</span></p>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{
+  "today": "Mon",
+  "classes": [
+    {
+      "classId": "665f...",
+      "name": "React JS Batch 12",
+      "teacher": { "name": "Anil Mehta" },
+      "slots": [{ "day": "Mon", "startTime": "09:00", "endTime": "10:00" }],
+      "liveSessionId": "6660..."
+    }
+  ]
+}</pre>
+        <p style="color:var(--muted); font-size:12.5px; margin-top:4px;"><span class="mono">liveSessionId</span> is <span class="mono">null</span> when no session is currently open for that class.</p>
+      </article>
+
+      <article class="endpoint" id="student-my-attendance">
+        <div class="endpoint-top"><span class="method m-get">GET</span><span class="path">/student/attendance</span><span class="badge role-student">Student only</span></div>
+        <p class="desc">The student's own attendance history and percentage, per class.<span class="use-case">Use case: the "My Attendance" page with the percentage ring per class.</span></p>
+        <div class="subhead">Query params</div>
+        <table><tr><th>Param</th><th>Notes</th></tr><tr><td class="mono">classId</td><td class="opt">optional — restrict to one class, otherwise returns all</td></tr></table>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{
+  "attendance": [
+    {
+      "classId": "665f...",
+      "className": "React JS Batch 12",
+      "totalSessions": 24,
+      "attendedSessions": 21,
+      "percentage": 88,
+      "records": [ { "_id": "665f...", "status": "present", "markedAt": "2026-07-20T09:02:14.000Z" } ]
+    }
+  ]
+}</pre>
+      </article>
+    </section>
+
+    <!-- ============================= ATTENDANCE ============================= -->
+    <section class="section" id="attendance">
+      <div class="section-head"><h2>Attendance (QR sessions)</h2><span class="count">5 endpoints</span></div>
+      <p class="section-desc">The core mechanic. A teacher opens a 10-minute session; the QR image inside it rotates roughly every 40 seconds. Students scan it, the backend checks their GPS accuracy and distance from the classroom (Haversine formula, default 50m), and records attendance if everything checks out.</p>
+
+      <article class="endpoint" id="att-create-session">
+        <div class="endpoint-top"><span class="method m-post">POST</span><span class="path">/attendance/sessions</span><span class="badge role-teacher">Teacher / Admin</span></div>
+        <p class="desc">Opens a new live attendance session for a class and returns the first QR code.<span class="use-case">Use case: teacher taps "Start attendance" on a class card.</span></p>
+        <div class="subhead">Request body</div>
+        <table>
+          <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+          <tr><td class="mono">classId</td><td>ObjectId</td><td class="req">Required</td><td>Must be a class assigned to this teacher</td></tr>
+          <tr><td class="mono">useMyCurrentLocation</td><td>boolean</td><td class="opt">Optional</td><td>If true, geofence uses <span class="mono">lat</span>/<span class="mono">lng</span> below instead of the class's stored location</td></tr>
+          <tr><td class="mono">lat</td><td>number</td><td class="opt">Optional</td><td>Required if <span class="mono">useMyCurrentLocation</span> is true</td></tr>
+          <tr><td class="mono">lng</td><td>number</td><td class="opt">Optional</td><td>Required if <span class="mono">useMyCurrentLocation</span> is true</td></tr>
+        </table>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">201</span></p>
+        <pre>{
+  "session": { "_id": "6660...", "class": "665f...", "sessionDate": "2026-07-20T09:00:00.000Z", "expiresAt": "2026-07-20T09:10:00.000Z" },
+  "qr": { "dataUrl": "data:image/png;base64,iVBORw0KG...", "scanUrl": "https://app.attendly.com/attend/eyJhbGci...", "tokenExpiresAt": "2026-07-20T09:00:40.000Z" }
+}</pre>
+        <div class="subhead">Possible errors</div>
+        <div class="error-row"><span class="status-tag status-4xx">403</span> You are not assigned to this class</div>
+        <div class="error-row"><span class="status-tag status-4xx">409</span> A live session already exists for this class</div>
+      </article>
+
+      <article class="endpoint" id="att-get-qr">
+        <div class="endpoint-top"><span class="method m-get">GET</span><span class="path">/attendance/sessions/:id/qr</span><span class="badge role-teacher">Teacher / Admin</span></div>
+        <p class="desc">Rotates the QR token and returns a fresh code image. The frontend polls this roughly every 30 seconds while a session is live.<span class="use-case">Use case: keeping the QR on the classroom screen fresh so a screenshot shared elsewhere goes stale fast.</span></p>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{
+  "qr": { "dataUrl": "data:image/png;base64,...", "scanUrl": "https://app.attendly.com/attend/eyJhbGci...", "tokenExpiresAt": "2026-07-20T09:01:20.000Z" },
+  "sessionExpiresAt": "2026-07-20T09:10:00.000Z"
+}</pre>
+        <div class="subhead">Possible errors</div>
+        <div class="error-row"><span class="status-tag status-4xx">410</span> Session has expired or been closed</div>
+      </article>
+
+      <article class="endpoint" id="att-close-session">
+        <div class="endpoint-top"><span class="method m-patch">PATCH</span><span class="path">/attendance/sessions/:id/close</span><span class="badge role-teacher">Teacher / Admin</span></div>
+        <p class="desc">Manually ends a session before its 10-minute window naturally expires.<span class="use-case">Use case: "Close session early" button once everyone present has scanned.</span></p>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{ "message": "Session closed" }</pre>
+      </article>
+
+      <article class="endpoint" id="att-session-status">
+        <div class="endpoint-top"><span class="method m-get">GET</span><span class="path">/attendance/sessions/:id/status</span><span class="badge role-teacher">Teacher / Admin</span></div>
+        <p class="desc">Live count of who has checked in so far, polled every few seconds while a session is open.<span class="use-case">Use case: the live "X / Y checked in" counter and recent check-ins list on the teacher's session screen.</span></p>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{
+  "session": { "_id": "6660...", "isLive": true, "expiresAt": "2026-07-20T09:10:00.000Z" },
+  "totalStudents": 32,
+  "presentCount": 27,
+  "records": [ { "_id": "665f...", "student": { "name": "Priya Sharma", "studentId": "STU-014" }, "markedAt": "2026-07-20T09:02:14.000Z" } ]
+}</pre>
+      </article>
+
+      <article class="endpoint" id="att-scan">
+        <div class="endpoint-top"><span class="method m-post">POST</span><span class="path">/attendance/scan</span><span class="badge role-student">Student only</span></div>
+        <p class="desc">Marks the logged-in student present for a session — the actual "scan" action. Rate-limited per IP as an anti-proxy measure.<span class="use-case">Use case: called automatically the moment a student's phone opens the <span class="mono">/attend/:token</span> link from the QR, after the browser reports their GPS location.</span></p>
+        <div class="subhead">Request body</div>
+        <table>
+          <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+          <tr><td class="mono">token</td><td>string</td><td class="req">Required</td><td>The rotating token from the QR/scanned link</td></tr>
+          <tr><td class="mono">lat</td><td>number</td><td class="req">Required</td><td>From <span class="mono">navigator.geolocation</span></td></tr>
+          <tr><td class="mono">lng</td><td>number</td><td class="req">Required</td><td></td></tr>
+          <tr><td class="mono">accuracy</td><td>number (meters)</td><td class="opt">Optional but recommended</td><td>Rejected if worse than <span class="mono">MAX_ALLOWED_GPS_ACCURACY_METERS</span> (default 100m)</td></tr>
+        </table>
+        <div class="subhead">Example request</div>
+        <pre>{ "token": "eyJhbGciOiJIUzI1NiIs...", "lat": 30.9011, "lng": 75.8574, "accuracy": 12 }</pre>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">201</span></p>
+        <pre>{
+  "message": "Attendance marked successfully",
+  "record": {
+    "_id": "665f...",
+    "session": "6660...",
+    "student": "665b...",
+    "distanceMeters": 14,
+    "status": "present",
+    "markedAt": "2026-07-20T09:02:14.000Z"
+  }
+}</pre>
+        <div class="subhead">Possible errors</div>
+        <div class="error-row"><span class="status-tag status-4xx">410</span> QR code has expired. Ask your teacher to refresh it.</div>
+        <div class="error-row"><span class="status-tag status-4xx">403</span> You are not enrolled in this class</div>
+        <div class="error-row"><span class="status-tag status-4xx">400</span> Location signal too weak/unreliable (accuracy 180m). Move to an open area and try again.</div>
+        <div class="error-row"><span class="status-tag status-4xx">403</span> You are 82m from the classroom. Must be within 50m to mark attendance. <span class="mono">(also returns distanceMeters + maxDistanceMeters)</span></div>
+        <div class="error-row"><span class="status-tag status-4xx">409</span> Attendance already marked for this session</div>
+      </article>
+    </section>
+
+    <!-- ============================= LEAVE ============================= -->
+    <section class="section" id="leave">
+      <div class="section-head"><h2>Leave &amp; regularization requests</h2><span class="count">4 endpoints</span></div>
+      <p class="section-desc">Handles the "I was in class but my scan failed" case — a student submits a request, their teacher approves or rejects it.</p>
+
+      <article class="endpoint" id="leave-submit">
+        <div class="endpoint-top"><span class="method m-post">POST</span><span class="path">/leave</span><span class="badge role-student">Student only</span></div>
+        <p class="desc">Submit a regularization request for a class/date.<span class="use-case">Use case: the "Request regularization" form.</span></p>
+        <div class="subhead">Request body</div>
+        <table>
+          <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+          <tr><td class="mono">classId</td><td>ObjectId</td><td class="req">Required</td><td>Must be a class the student is enrolled in</td></tr>
+          <tr><td class="mono">date</td><td>date string</td><td class="req">Required</td><td></td></tr>
+          <tr><td class="mono">reason</td><td>string</td><td class="req">Required</td><td></td></tr>
+          <tr><td class="mono">relatedSessionId</td><td>ObjectId</td><td class="opt">Optional</td><td>If provided and later approved, auto-creates an attendance record marked "regularized"</td></tr>
+        </table>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">201</span></p>
+        <pre>{ "leaveRequest": { "_id": "6661...", "status": "pending", "reason": "Scan failed, phone GPS was off" } }</pre>
+      </article>
+
+      <article class="endpoint" id="leave-mine">
+        <div class="endpoint-top"><span class="method m-get">GET</span><span class="path">/leave/mine</span><span class="badge role-student">Student only</span></div>
+        <p class="desc">A student's own submitted requests and their review status.<span class="use-case">Use case: the list under the regularization request form.</span></p>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{ "requests": [ { "_id": "6661...", "class": { "name": "React JS Batch 12" }, "status": "approved", "reviewNote": "Confirmed with attendance sheet" } ] }</pre>
+      </article>
+
+      <article class="endpoint" id="leave-class">
+        <div class="endpoint-top"><span class="method m-get">GET</span><span class="path">/leave/class/:classId</span><span class="badge role-teacher">Teacher / Admin</span></div>
+        <p class="desc">Requests submitted for one of the teacher's classes.<span class="use-case">Use case: the Leave Requests review page.</span></p>
+        <div class="subhead">Query params</div>
+        <table><tr><th>Param</th><th>Notes</th></tr><tr><td class="mono">status</td><td class="opt">optional — "pending" | "approved" | "rejected"</td></tr></table>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{ "requests": [ { "_id": "6661...", "student": { "name": "Priya Sharma" }, "status": "pending", "reason": "Scan failed" } ] }</pre>
+      </article>
+
+      <article class="endpoint" id="leave-review">
+        <div class="endpoint-top"><span class="method m-patch">PATCH</span><span class="path">/leave/:id/review</span><span class="badge role-teacher">Teacher / Admin</span></div>
+        <p class="desc">Approve or reject a pending request. Approving a request tied to a specific session automatically creates a "regularized" attendance record if one doesn't already exist.<span class="use-case">Use case: Approve / Reject buttons on the teacher's Leave Requests page.</span></p>
+        <div class="subhead">Request body</div>
+        <table>
+          <tr><th>Field</th><th>Type</th><th>Required</th><th>Notes</th></tr>
+          <tr><td class="mono">decision</td><td>"approved" | "rejected"</td><td class="req">Required</td><td></td></tr>
+          <tr><td class="mono">reviewNote</td><td>string</td><td class="opt">Optional</td><td>Shown back to the student</td></tr>
+        </table>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{ "leaveRequest": { "_id": "6661...", "status": "approved", "reviewedBy": "665a...", "reviewNote": "Confirmed with attendance sheet" } }</pre>
+        <div class="subhead">Possible errors</div>
+        <div class="error-row"><span class="status-tag status-4xx">403</span> You do not teach this class</div>
+        <div class="error-row"><span class="status-tag status-4xx">409</span> This request has already been reviewed</div>
+      </article>
+    </section>
+
+    <!-- ============================= REPORTS ============================= -->
+    <section class="section" id="reports">
+      <div class="section-head"><h2>Reports</h2><span class="count">3 endpoints</span></div>
+      <p class="section-desc">Export and dashboard-analytics endpoints for a class's full attendance history.</p>
+
+      <article class="endpoint" id="report-csv">
+        <div class="endpoint-top"><span class="method m-get">GET</span><span class="path">/reports/class/:id/csv</span><span class="badge role-teacher">Teacher / Admin</span></div>
+        <p class="desc">Downloads the class's full attendance history as a CSV file.<span class="use-case">Use case: the "CSV" export button.</span></p>
+        <div class="subhead">Response</div>
+        <p><span class="status-tag status-2xx">200</span> <span class="mono">Content-Type: text/csv</span> — file attachment, columns: studentName, studentId, className, date, status, markedAt</p>
+      </article>
+
+      <article class="endpoint" id="report-pdf">
+        <div class="endpoint-top"><span class="method m-get">GET</span><span class="path">/reports/class/:id/pdf</span><span class="badge role-teacher">Teacher / Admin</span></div>
+        <p class="desc">Downloads the same report as a formatted PDF table.<span class="use-case">Use case: the "PDF" export button.</span></p>
+        <div class="subhead">Response</div>
+        <p><span class="status-tag status-2xx">200</span> <span class="mono">Content-Type: application/pdf</span> — file attachment</p>
+      </article>
+
+      <article class="endpoint" id="report-summary">
+        <div class="endpoint-top"><span class="method m-get">GET</span><span class="path">/reports/class/:id/summary</span><span class="badge role-teacher">Teacher / Admin</span></div>
+        <p class="desc">Aggregated analytics for a class: overall attendance %, session-by-session trend, and a per-student breakdown.<span class="use-case">Use case: feeds the recharts trend line and stats on the teacher's Attendance page.</span></p>
+        <div class="subhead">Success response</div>
+        <p><span class="status-tag status-2xx">200</span></p>
+        <pre>{
+  "className": "React JS Batch 12",
+  "totalSessions": 24,
+  "overallPercentage": 82,
+  "trend": [ { "date": "2026-07-06T09:00:00.000Z", "presentCount": 29, "totalStudents": 32 } ],
+  "perStudent": [ { "student": { "name": "Priya Sharma" }, "attended": 21, "totalSessions": 24, "percentage": 88 } ]
+}</pre>
+      </article>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  // Smooth-scroll sidebar nav
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', () => {
+      const el = document.getElementById(link.dataset.target);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // Search filter — matches against path + description text of each endpoint card
+  const searchInput = document.getElementById('searchInput');
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.trim().toLowerCase();
+    document.querySelectorAll('.endpoint').forEach(card => {
+      const text = card.innerText.toLowerCase();
+      card.classList.toggle('hidden', q.length > 0 && !text.includes(q));
+    });
+    document.querySelectorAll('.section').forEach(section => {
+      const visible = section.querySelectorAll('.endpoint:not(.hidden)').length;
+      section.classList.toggle('hidden', q.length > 0 && visible === 0);
+    });
+    document.querySelectorAll('.nav-link').forEach(link => {
+      const card = document.getElementById(link.dataset.target);
+      if (card) link.classList.toggle('hidden', card.classList.contains('hidden'));
+    });
+  });
+</script>
+</body>
+</html>
